@@ -5,6 +5,8 @@ import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type Section = 'home' | 'news' | 'shop' | 'about' | 'faq' | 'dev' | 'account' | 'site-info';
 type ShopCategory = 'popular' | 'privileges' | 'cases' | 'zavrides' | 'boxes' | 'other';
@@ -22,6 +24,16 @@ const Index = () => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [user, setUser] = useState<User | null>(null);
   const [greeting, setGreeting] = useState('');
+  const [showLogin, setShowLogin] = useState(true);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+
+  const credentials = {
+    'moondar1nka': { password: 'ArtPlay2SO', role: 'Админ', server: 'LiteTest #1' },
+    'spectralblade': { password: 'Balista223', role: 'Тех Админ', server: 'Duels #1' },
+    'LI': { password: 'openme', role: 'Админ', server: 'Literally' },
+  };
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -94,15 +106,27 @@ const Index = () => {
   ];
 
   const handleLogin = () => {
-    setUser({
-      username: 'moondar1nka',
-      role: 'Админ',
-      server: 'LiteTest #1',
-    });
+    const cred = credentials[username as keyof typeof credentials];
+    
+    if (cred && cred.password === password) {
+      setUser({
+        username,
+        role: cred.role,
+        server: cred.server,
+      });
+      setShowLogin(false);
+      setLoginError('');
+    } else {
+      setLoginError('Неверный логин или пароль');
+    }
   };
 
   const handleLogout = () => {
     setUser(null);
+    setShowLogin(true);
+    setUsername('');
+    setPassword('');
+    setLoginError('');
     if (activeSection === 'dev') setActiveSection('home');
   };
 
@@ -399,6 +423,58 @@ const Index = () => {
       );
     }
   };
+
+  if (showLogin) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
+        <Card className="w-full max-w-md p-8 gradient-border bg-card">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold shimmer-text mb-2">ZWorld</h1>
+            <p className="text-muted-foreground">Войдите в систему</p>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="username">Логин</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="Введите логин"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                className="bg-background border-border"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">Пароль</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Введите пароль"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                className="bg-background border-border"
+              />
+            </div>
+            
+            {loginError && (
+              <div className="text-red-500 text-sm text-center">
+                {loginError}
+              </div>
+            )}
+            
+            <Button onClick={handleLogin} className="w-full">
+              <Icon name="LogIn" className="mr-2" size={20} />
+              Войти
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
